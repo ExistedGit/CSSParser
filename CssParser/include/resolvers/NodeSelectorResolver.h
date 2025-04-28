@@ -15,17 +15,17 @@ public:
     /**
      * Check Whether a selector can apply to the node
      */
-	static bool DoesNodeMatchSelector(INodeSelector* node, Selector* selector);
+	static bool DoesNodeMatchSelector(const INodeSelector* node, Selector* selector);
 
 private:
-	static bool DoesNodeMatchIDSelector(INodeSelector* node, IdSelector* selector);
-	static bool DoesNodeMatchClassSelector(INodeSelector* node, ClassSelector* selector);
-	static bool DoesNodeMatchTypeSelector(INodeSelector* node, TypeSelector* selector);
-	static bool DoesNodeMatchAttributeSelector(INodeSelector* node, AttributeSelector* selector);
-	static bool DoesNodeMatchPseudoSelector(INodeSelector* node, PseudoSelector* selector);
-	static bool DoesNodeMatchSequenceSelector(INodeSelector* node, SequenceSelector* selector);
-	static bool DoesNodeMatchCombineSelector(INodeSelector* node, CombineSelector* selector);
-	static bool DoesNodeMatchGroupSelector(INodeSelector* node, GroupSelector* selector);
+	static bool DoesNodeMatchIDSelector(const INodeSelector* node, IdSelector* selector);
+	static bool DoesNodeMatchClassSelector(const INodeSelector* node, ClassSelector* selector);
+	static bool DoesNodeMatchTypeSelector(const INodeSelector* node, TypeSelector* selector);
+	static bool DoesNodeMatchAttributeSelector(const INodeSelector* node, AttributeSelector* selector);
+	static bool DoesNodeMatchPseudoSelector(const INodeSelector* node, PseudoSelector* selector);
+	static bool DoesNodeMatchSequenceSelector(const INodeSelector* node, SequenceSelector* selector);
+	static bool DoesNodeMatchCombineSelector(const INodeSelector* node, CombineSelector* selector);
+	static bool DoesNodeMatchGroupSelector(const INodeSelector* node, GroupSelector* selector);
 };
 
 }

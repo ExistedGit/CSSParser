@@ -9,86 +9,95 @@
 class CustomNode : public INodeSelector
 {
 public:
-    CustomNode(std::string tag, std::string id, std::string classes,
-        std::map<std::string, std::string> attributes, std::string inlineStyle,
-        std::vector<CustomNode*> children)
-        : tag(tag), id(id), classes(future::StringUtil::split(classes, ' ')), 
-          attributes(attributes), inlineStyle(inlineStyle)
-    {
-        int idx = 0;
-        for (const auto& child : children)
-        {
-            child->SetParent(this, idx++);
-            this->children.push_back(child);
-        }
-    }
+	CustomNode(std::string tag, std::string id, std::string classes,
+		std::map<std::string, std::string> attributes, std::string inlineStyle,
+		std::vector<CustomNode*> children)
+		: tag(tag), id(id), classes(future::StringUtil::split(classes, ' ')),
+		attributes(attributes), inlineStyle(inlineStyle)
+	{
+		int idx = 0;
+		for (const auto& child : children)
+		{
+			child->SetParent(this, idx++);
+			this->children.push_back(child);
+		}
+	}
 
-    virtual ~CustomNode()
-    {
-        for (const auto& child : children)
-            delete child;
-    }
+	virtual ~CustomNode()
+	{
+		for (const auto& child : children)
+			delete child;
+	}
 
-    void SetParent(CustomNode* parent, int indexWithinParent)
-    {
-        this->parent = parent;
-        this->indexWithinParent = indexWithinParent;
-    }
+	void SetParent(CustomNode* parent, int indexWithinParent)
+	{
+		this->parent = parent;
+		this->indexWithinParent = indexWithinParent;
+	}
 
-    std::string GetIdDesc() { return !id.empty() ? ("#" + id) : ""; }
-    std::string GetClassesDesc() { return !classes.empty() ? ("(" + future::StringUtil::join(classes, ' ') + ")") : ""; }
+	std::string GetIdDesc() { return !id.empty() ? ("#" + id) : ""; }
+	std::string GetClassesDesc() { return !classes.empty() ? ("(" + future::StringUtil::join(classes, ' ') + ")") : ""; }
 
-    // INodeSelector Implementation
+	// INodeSelector Implementation
 
-    virtual std::string GetTag() override
-    {
-        return tag;
-    }
+	virtual std::string GetTag() const override
+	{
+		return tag;
+	}
 
-    virtual std::string GetId() override
-    {
-        return id;
-    }
+	virtual std::string GetId() const override
+	{
+		return id;
+	}	
+	
+	virtual bool HasClass(const std::string& cl) const override
+	{
+		return std::find(classes.begin(), classes.end(), cl) != classes.end();
+	}
 
-    virtual std::vector<std::string> GetClasses() override
-    {
-        return classes;
-    }
+	virtual std::optional<std::string> GetAttribute(const std::string& key) const override
+	{
+		if (attributes.contains(key))return  attributes.at(key);
+		return std::nullopt;
+	}
 
-    virtual std::pair<std::string, std::string> GetAttribute(std::string key) override
-    {
-        std::string value = attributes.find(key) != attributes.end() ? attributes[key] : std::string();
-        return std::make_pair(key, value);
-    }
+	bool hovered;
+	virtual bool IsHovered() const override {
+		return hovered;
+	}
 
-    virtual INodeSelector* GetParent() override
-    {
-        return parent;
-    }
+	virtual INodeSelector* GetParent() const override
+	{
+		return parent;
+	}
 
-    virtual std::vector<INodeSelector*> GetChildren() override
-    {
-        std::vector<INodeSelector*> convertedChildren(children.begin(), children.end());
-        return convertedChildren;
-    }
+	virtual
+		std::span<const INodeSelector* const> GetChildren() const override
+	{
+		return { reinterpret_cast<const INodeSelector* const*>(children.data()) , children.size() };
+	}
 
-    virtual int GetIndexWithinParent() override
-    {
-        return indexWithinParent;
-    }
+	virtual int GetIndexWithinParent()const  override
+	{
+		return indexWithinParent;
+	}
 
-    // Node Members
+	// Node Members
 
-    std::string tag;
-    std::string id;
-    std::vector<std::string> classes;
-    std::map<std::string, std::string> attributes;
-    std::string inlineStyle;
+	std::string tag;
+	std::string id;
+	std::vector<std::string> classes;
+	std::map<std::string, std::string> attributes;
+	std::string inlineStyle;
 
-    CustomNode* parent = nullptr;
-    std::vector<CustomNode*> children;
+	CustomNode* parent = nullptr;
+	std::vector<CustomNode*> children;
 
-    int indexWithinParent = 0;
+	int indexWithinParent = 0;
 
-    StyleMap styles;
+	StyleMap styles;
+
+	// Inherited via INodeSelector
+	bool IsFocused() const override;
+	bool IsActive() const override;
 };

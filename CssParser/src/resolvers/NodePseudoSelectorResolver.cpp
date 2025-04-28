@@ -6,34 +6,23 @@
 #include <string>
 
 namespace future {  
-    static std::map<std::string, bool> dynamicPsudoClassCacheMap;
+    inline static std::set<std::string> skippedPseudoClasses = {
+        "link",
+        "visited",
+        "enable",
+        "disable",
+        "checked",
+        "indeterminate",
+        "target",
+    };
 
-    static void NodeIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
-    static void NodeFullIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
-    static void NodeTypeEqualIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
-    static void NodeFullTypeEqualIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
+    static void NodeIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
+    static void NodeFullIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
+    static void NodeTypeEqualIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
+    static void NodeFullTypeEqualIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* userData);
 
-    std::map<std::string, bool>& NodePseudoSelectorResolver::GetDynamicPseudoClassMap()
-    {
-        if (!dynamicPsudoClassCacheMap.empty()) {
-            return dynamicPsudoClassCacheMap;
-        }
-
-        dynamicPsudoClassCacheMap["link"]          = true;
-        dynamicPsudoClassCacheMap["visited"]       = true;
-        dynamicPsudoClassCacheMap["hover"]         = true;
-        dynamicPsudoClassCacheMap["active"]        = true;
-        dynamicPsudoClassCacheMap["focus"]         = true;
-        dynamicPsudoClassCacheMap["enable"]        = true;
-        dynamicPsudoClassCacheMap["disable"]       = true;
-        dynamicPsudoClassCacheMap["checked"]       = true;
-        dynamicPsudoClassCacheMap["indeterminate"] = true;
-        dynamicPsudoClassCacheMap["target"]        = true;
-
-        return dynamicPsudoClassCacheMap;
-    }
     
-    bool NodePseudoSelectorResolver::DoesNodeMatchPseudo(INodeSelector *node, future::PseudoSelector *selector)
+    bool NodePseudoSelectorResolver::DoesNodeMatchPseudo(const INodeSelector *node, future::PseudoSelector *selector)
     {
         if (!node || !selector) {
             return false;
@@ -42,7 +31,8 @@ namespace future {
         if (ruleData.empty()) {
             return false;
         }
-        if (GetDynamicPseudoClassMap()[ruleData]) {
+
+        if (skippedPseudoClasses.contains(ruleData)) {
             return true;
         }
 
@@ -84,10 +74,19 @@ namespace future {
         case strhash("empty"):
             return !node->GetChildren().size();
 
+        case strhash("hover"):
+            return node->IsHovered();
+
+        case strhash("focus"):
+            return node->IsFocused();
+        
+        case strhash("active"):
+            return node->IsActive();
+
         case strhash("lang"): {
             auto langAttr = node->GetAttribute("lang");
             PseudoSelector::Parameter* p = selector->getParameter();
-            return (p && !langAttr.first.empty()) && (p->pString == langAttr.second);
+            return p && langAttr && p->pString == langAttr;
         }
         }
 
@@ -97,35 +96,35 @@ namespace future {
 
     // private functions
     
-    int NodePseudoSelectorResolver::IndexOfSiblings(INodeSelector* node)
+    int NodePseudoSelectorResolver::IndexOfSiblings(const INodeSelector* node)
     {
         TraverseUtilStruct baseInfo(node);
         bool ret = TraverseElementNodeSiblings(node, NodeIndexCounter, &baseInfo);
         return ret ? baseInfo.idx : 0;
     }
     
-    int NodePseudoSelectorResolver::IndexEqualTypeOfSiblings(INodeSelector *node)
+    int NodePseudoSelectorResolver::IndexEqualTypeOfSiblings(const INodeSelector* node)
     {
         TraverseUtilStruct baseInfo(node);
         bool ret = TraverseElementNodeSiblings(node, NodeTypeEqualIndexCounter, &baseInfo);
         return ret ? baseInfo.idx : 0;
     }
     
-    int NodePseudoSelectorResolver::LastIndexOfSiblings(INodeSelector *node)
+    int NodePseudoSelectorResolver::LastIndexOfSiblings(const INodeSelector* node)
     {
         TraverseUtilStruct baseInfo(node);
         bool ret = TraverseElementNodeSiblings(node, NodeFullIndexCounter, &baseInfo);
         return ret ? baseInfo.totalCount - baseInfo.idx + 1 : 0;
     }
     
-    int NodePseudoSelectorResolver::LastIndexEqualTypeOfSiblings(INodeSelector *node)
+    int NodePseudoSelectorResolver::LastIndexEqualTypeOfSiblings(const INodeSelector* node)
     {
         TraverseUtilStruct baseInfo(node);
         bool ret = TraverseElementNodeSiblings(node, NodeFullTypeEqualIndexCounter, &baseInfo);
         return ret ? baseInfo.totalCount - baseInfo.idx + 1 : 0;
     }
     
-    bool NodePseudoSelectorResolver::TraverseElementNodeSiblings(INodeSelector *node, traverseAction ac, TraverseUtilStruct* baseInfo)
+    bool NodePseudoSelectorResolver::TraverseElementNodeSiblings(const INodeSelector* node, traverseAction ac, TraverseUtilStruct* baseInfo)
     {
         INodeSelector* parent = node->GetParent();
         if (!parent) {
@@ -195,7 +194,7 @@ namespace future {
 
     // callbacks
 
-    void NodeIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
+    void NodeIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
     {
         baseInfo->idx += 1;
         if (node == baseInfo->selfNode) {
@@ -203,7 +202,7 @@ namespace future {
         }
     }
     
-    void NodeFullIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
+    void NodeFullIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
     {
         baseInfo->totalCount += 1;
         if (node == baseInfo->selfNode) {
@@ -211,7 +210,7 @@ namespace future {
         }
     }
     
-    void NodeTypeEqualIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
+    void NodeTypeEqualIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
     {
         if (node->GetTag() == baseInfo->selfNode->GetTag()) {
             baseInfo->idx += 1;
@@ -221,7 +220,7 @@ namespace future {
         }
     }
     
-    void NodeFullTypeEqualIndexCounter(INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
+    void NodeFullTypeEqualIndexCounter(const INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo)
     {
         if (node->GetTag() == baseInfo->selfNode->GetTag()) {
             baseInfo->totalCount += 1;

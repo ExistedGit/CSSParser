@@ -134,7 +134,7 @@ std::string GetCssString()
         "src: url('data:font/ttf;base64,AAEAAAASAQAABAAgR0RFRpBWgnUAAZQAAAABpkdQT1PvVcM1AAGVqAAAL7BHU1VCq/Re7wABxVgAAAzKT1MvMqpWvf8AAVyIA...'); }");
 
     return s + R"(
-        body { 
+        body 
           font-family: 'Helvetica';
           text-align: center; 
         }

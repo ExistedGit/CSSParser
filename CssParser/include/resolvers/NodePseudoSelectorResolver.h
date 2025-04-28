@@ -13,11 +13,11 @@ namespace future {
     class PseudoSelector;
 
     struct TraverseUtilStruct {
-        INodeSelector* selfNode;
+        const INodeSelector* selfNode;
         int idx;
         int totalCount;
 
-        TraverseUtilStruct(INodeSelector* n)
+        TraverseUtilStruct(const INodeSelector* n)
         {
             selfNode = n;
             idx = 0;
@@ -27,19 +27,19 @@ namespace future {
 
     class NodePseudoSelectorResolver {
     public:
-        static bool DoesNodeMatchPseudo(INodeSelector*, PseudoSelector*);
+        static bool DoesNodeMatchPseudo(const INodeSelector*, PseudoSelector*);
 
     private:
-        typedef void(*traverseAction)(INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo);
+        typedef void(*traverseAction)(const INodeSelector* node, bool& stop, TraverseUtilStruct* baseInfo);
 
         static std::map<std::string, bool>& GetDynamicPseudoClassMap();
         
-        static bool TraverseElementNodeSiblings(INodeSelector*node, traverseAction ac, TraverseUtilStruct* baseInfo);
+        static bool TraverseElementNodeSiblings(const INodeSelector*node, traverseAction ac, TraverseUtilStruct* baseInfo);
         
-        static int  IndexOfSiblings(INodeSelector* node);
-        static int  IndexEqualTypeOfSiblings(INodeSelector* node);        
-        static int  LastIndexOfSiblings(INodeSelector* node);
-        static int  LastIndexEqualTypeOfSiblings(INodeSelector* node);
+        static int  IndexOfSiblings(const INodeSelector* node);
+        static int  IndexEqualTypeOfSiblings(const INodeSelector* node);        
+        static int  LastIndexOfSiblings(const INodeSelector* node);
+        static int  LastIndexEqualTypeOfSiblings(const INodeSelector* node);
         
         static bool IndexMatchesParameter(future::PseudoSelector* selector, int idx);        
         static bool IndexMatchesPolynomial(PseudoSelector::Parameter* parameter, int idx);

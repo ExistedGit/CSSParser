@@ -69,7 +69,7 @@ namespace future {
         
         virtual std::string description();
 
-        std::vector<INodeSelector*> matchingNodes;
+        std::vector<const INodeSelector*> matchingNodes;
 
     private:
         std::list<Selector*> m_instanceSiblingList;
